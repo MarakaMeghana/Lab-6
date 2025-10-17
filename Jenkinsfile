@@ -17,11 +17,13 @@ pipeline {
         stage('Deploy Frontend to Tomcat') {
             steps {
                 bat '''
-                if exist "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\reacttaskapi" (
-                    rmdir /S /Q "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\reacttaskapi"
+                set TOMCAT="C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\reacttaskapi"
+
+                if exist %TOMCAT% (
+                    rmdir /S /Q %TOMCAT%
                 )
-                mkdir "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\reacttaskapi"
-                xcopy /E /I /Y reactfrontend\\dist\\* "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\reacttaskapi\\"
+                mkdir %TOMCAT%
+                xcopy /E /I /Y reactfrontend\\build\\* %TOMCAT%\\
                 '''
             }
         }
@@ -39,13 +41,17 @@ pipeline {
         stage('Deploy Backend to Tomcat') {
             steps {
                 bat '''
-                if exist "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\springboottaskapi.war" (
-                    del /Q "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\springboottaskapi.war"
+                set TOMCAT_WAR="C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\springboottaskapi.war"
+                set TOMCAT_DIR="C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\springboottaskapi"
+
+                if exist %TOMCAT_WAR% (
+                    del /Q %TOMCAT_WAR%
                 )
-                if exist "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\springboottaskapi" (
-                    rmdir /S /Q "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\springboottaskapi"
+                if exist %TOMCAT_DIR% (
+                    rmdir /S /Q %TOMCAT_DIR%
                 )
-                copy "springbootbackend\\target\\*.war" "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\springboottaskapi.war"
+
+                copy springbootbackend\\target\\*.war %TOMCAT_WAR%
                 '''
             }
         }
@@ -54,10 +60,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Deployment Successful!'
+            echo '✅ Full-Stack Deployment Successful!'
         }
         failure {
-            echo '❌ Pipeline Failed.'
+            echo '❌ Deployment Failed.'
         }
     }
 }
